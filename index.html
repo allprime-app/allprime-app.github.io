@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AllPrime</title>
+<meta name="description" content="AllPrime, primer3 hesaplama motorunu kullanan bir Windows masaüstü programıdır.">
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600;700&display=swap">
+<style>
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<style>
+/* Layout: the page is built like the program window - a top bar, then panels on the
+   app's own ground; tab names appear as the app's tab chips. Palette = AllPrime style.css. */
+:root {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --panel: #171a21;
+  --panel-2: #1e222b;
+  --border: #2a2f3a;
+  --input-border: #636c7e;
+  --text: #e6e9ef;
+  --muted: #8b93a3;
+  --accent: #2dd4bf;
+  --accent-2: #14b8a6;
+  --on-accent: #06231f;
+  --fwd: #4ade80;
+  --rev: #fbbf24;
+  --hedef: #e879f9;
+  --kontrol: #a78bfa;
+  --danger: #f87171;
+  --topbar-1: #161a22;
+  --topbar-2: #12151b;
+  --logo-glow: rgba(45, 212, 191, .22);
+  --accent-soft: rgba(45, 212, 191, .10);
+  --shot-edge: #2a2f3a;
+  --f-text: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono: "IBM Plex Mono", Consolas, "Cascadia Mono", ui-monospace, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f3f5f8;
+    --panel: #ffffff;
+    --panel-2: #f1f4f8;
+    --border: #d5dbe4;
+    --input-border: #838d9e;
+    --text: #161b24;
+    --muted: #545e6e;
+    --accent: #0d6b64;
+    --accent-2: #115e59;
+    --on-accent: #ffffff;
+    --fwd: #146c35;
+    --rev: #8f4f00;
+    --hedef: #a21caf;
+    --kontrol: #6d28d9;
+    --danger: #a51d1d;
+    --topbar-1: #ffffff;
+    --topbar-2: #f6f8fb;
+    --logo-glow: rgba(13, 107, 100, .18);
+    --accent-soft: rgba(13, 107, 100, .08);
+    --shot-edge: #c3cbd7;
+  }
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f3f5f8;
+  --panel: #ffffff;
+  --panel-2: #f1f4f8;
+  --border: #d5dbe4;
+  --input-border: #838d9e;
+  --text: #161b24;
+  --muted: #545e6e;
+  --accent: #0d6b64;
+  --accent-2: #115e59;
+  --on-accent: #ffffff;
+  --fwd: #146c35;
+  --rev: #8f4f00;
+  --hedef: #a21caf;
+  --kontrol: #6d28d9;
+  --danger: #a51d1d;
+  --topbar-1: #ffffff;
+  --topbar-2: #f6f8fb;
+  --logo-glow: rgba(13, 107, 100, .18);
+  --accent-soft: rgba(13, 107, 100, .08);
+  --shot-edge: #c3cbd7;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--f-text);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+img { max-width: 100%; }
+a { color: var(--accent); text-underline-offset: 3px; }
+a:hover { color: var(--accent-2); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+code, .mono { font-family: var(--f-mono); font-size: .92em; }
+
+/* language: only the chosen one is shown */
+.site:not(.en-on) .en { display: none !important; }
+.site.en-on .tr { display: none !important; }
+/* theme-matched screenshots */
+.shot-light, .crop img.shot-light { display: none; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) .shot-dark { display: none; }
+  :root:not([data-theme="dark"]) .shot-light { display: block; }
+}
+:root[data-theme="light"] .shot-dark { display: none; }
+:root[data-theme="light"] .shot-light { display: block; }
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* ---- top bar, as in the program ---- */
+.topbar {
+  background: linear-gradient(180deg, var(--topbar-1), var(--topbar-2));
+  border-bottom: 1px solid var(--border);
+}
+.topbar .wrap {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding-block: 14px;
+}
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.logo { display: block; flex: none; width: 46px; height: 46px; border-radius: 13px; box-shadow: 0 4px 16px var(--logo-glow); }
+.logo svg { display: block; width: 46px; height: 46px; }
+.brand-name { margin: 0; font-size: 1.15rem; font-weight: 650; line-height: 1.2; }
+.brand-sub { margin: 2px 0 0; font-size: .8rem; color: var(--muted); line-height: 1.35; }
+.lang { display: flex; flex: none; background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.lang button {
+  font: 600 .85rem var(--f-text); color: var(--muted); background: transparent;
+  border: 0; padding: 8px 14px; cursor: pointer; min-width: 44px; min-height: 36px;
+}
+.lang button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+
+/* ---- type scale ---- */
+h1, h2, h3 { text-wrap: balance; line-height: 1.2; margin: 0; }
+h1 { font-size: clamp(1.75rem, 1.2rem + 2.2vw, 2.6rem); font-weight: 650; letter-spacing: -.01em; }
+h2 { font-size: clamp(1.3rem, 1.1rem + .8vw, 1.65rem); font-weight: 650; }
+h3 { font-size: 1.05rem; font-weight: 600; }
+p { margin: 0; }
+.lead { font-size: 1.1rem; color: var(--text); max-width: 62ch; }
+.muted { color: var(--muted); }
+.eyebrow {
+  font: 600 .74rem var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent);
+}
+
+main { display: grid; gap: 64px; padding-block: 44px 56px; }
+section { display: grid; gap: 22px; }
+.sec-head { display: grid; gap: 8px; max-width: 70ch; }
+
+/* ---- hero ---- */
+.hero { display: grid; gap: 28px; }
+.hero-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 28px 40px; align-items: end; }
+.hero-text { display: grid; gap: 16px; min-width: 0; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 4px 0 0; list-style: none; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--border); background: var(--panel-2); border-radius: 999px;
+  padding: 3px 12px; font-size: .84rem; color: var(--muted); white-space: nowrap;
+}
+.chip b { color: var(--text); font-weight: 600; }
+.dl { display: grid; gap: 8px; justify-items: start; }
+.dl a.btn {
+  display: inline-block; font: 600 1rem var(--f-text); padding: 12px 22px; border-radius: 8px;
+  border: 1px solid var(--accent); background: var(--accent); color: var(--on-accent);
+  text-decoration: none;
+}
+.dl a.btn:hover { background: var(--accent-2); border-color: var(--accent-2); color: var(--on-accent); }
+.dl small { font-size: .82rem; color: var(--muted); max-width: 34ch; }
+.cite {
+  font-family: var(--f-mono); font-size: .88rem; line-height: 1.55; margin: 0;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px;
+  overflow-wrap: anywhere;
+}
+
+/* screenshot frames: CSS crop of a real screenshot */
+.shot { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.crop {
+  position: relative; width: 100%; max-width: 100%;
+  aspect-ratio: var(--ar, 16 / 9);
+  overflow: hidden; border-radius: var(--radius);
+  border: 1px solid var(--shot-edge); background: var(--panel);
+}
+.crop img {
+  display: block; width: 100%; height: 100%;
+  object-fit: cover; object-position: var(--pos, 50% 0%);
+}
+/* hide the app window's own scrollbar at the right edge (about 1.2 %) */
+.crop.trim-right img { width: 101.3%; max-width: none; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; counter-reset: adim; }
+.steps li { counter-increment: adim; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.steps li::before {
+  content: counter(adim); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px;
+  background: var(--accent); color: var(--on-accent); font: 600 .95rem var(--f-mono);
+}
+.steps p { color: var(--muted); }
+.steps p b, .steps h3 code { color: var(--text); }
+.scroll-hint { display: none; margin: 0; font-size: .8rem; color: var(--muted); }
+.shot figcaption { font-size: .88rem; color: var(--muted); max-width: 75ch; }
+.shot figcaption b { color: var(--text); font-weight: 600; }
+
+/* ---- primer strip (real output of the program) ---- */
+.strip {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 20px; display: grid; gap: 16px;
+}
+.strip-scroll { overflow-x: auto; }
+.strip svg { display: block; width: 100%; min-width: 520px; height: auto; }
+.primers { display: grid; gap: 6px; margin: 0; }
+.primers div { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 4px 12px; align-items: baseline; }
+.primers dt { font-weight: 600; }
+.primers dd { margin: 0; font-family: var(--f-mono); font-size: .9rem; color: var(--accent); overflow-wrap: anywhere; }
+.primers dd span { color: var(--muted); font-family: var(--f-text); font-size: .85rem; }
+.c-fwd { color: var(--fwd); } .c-rev { color: var(--rev); } .c-hedef { color: var(--hedef); }
+.strip-meta { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ---- tab list ---- */
+.tabs { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--border); }
+.tabs li {
+  display: grid; grid-template-columns: 13rem minmax(0, 1fr); gap: 8px 28px;
+  padding-block: 18px; border-bottom: 1px solid var(--border);
+}
+.tab-name {
+  justify-self: start; align-self: start;
+  font-weight: 600; font-size: .95rem; padding: 7px 14px;
+  background: var(--panel-2); border: 1px solid var(--border); border-bottom-color: var(--accent);
+  border-radius: 8px 8px 0 0; white-space: nowrap;
+}
+.tab-body { display: grid; gap: 6px; min-width: 0; max-width: 68ch; }
+.ui { font-weight: 600; color: var(--text); white-space: nowrap; }
+
+/* ---- feature groups ---- */
+.split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 32px; align-items: start; }
+.feat { display: grid; gap: 20px; margin: 0; }
+.feat > div { display: grid; gap: 4px; }
+.feat dt { font-weight: 600; }
+.feat dd { margin: 0; color: var(--muted); max-width: 64ch; }
+.feat dd b { color: var(--text); font-weight: 600; }
+
+.gallery { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 28px; }
+.gallery .wide { grid-column: 1 / -1; }
+
+/* ---- data / requirements ---- */
+.cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.panel {
+  background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 22px; display: grid; gap: 14px; align-content: start; min-width: 0;
+}
+.panel ul { margin: 0; padding-left: 1.1rem; display: grid; gap: 8px; }
+.panel li::marker { color: var(--accent); }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: .8rem; }
+td.num { text-align: right; white-space: nowrap; padding-right: 0; }
+tr.sum td { font-weight: 600; border-bottom: 0; }
+
+/* ---- notice ---- */
+.notice {
+  border: 1px solid var(--rev); border-radius: var(--radius); background: var(--panel);
+  padding: 22px; display: grid; gap: 12px;
+}
+.notice h2 { color: var(--rev); font-size: 1.2rem; }
+.notice ol { margin: 0; padding-left: 1.2rem; display: grid; gap: 10px; max-width: 78ch; }
+
+footer { border-top: 1px solid var(--border); background: var(--topbar-2); }
+footer .wrap { padding-block: 26px 34px; display: grid; gap: 10px; font-size: .88rem; color: var(--muted); }
+footer p { max-width: 90ch; }
+
+@media (max-width: 860px) {
+  /* screenshots keep a readable size and scroll sideways inside their own frame */
+  .shot-scroll {
+    overflow-x: auto; max-width: 100%;
+    border: 1px solid var(--shot-edge); border-radius: var(--radius); background: var(--panel);
+  }
+  .shot-scroll .crop { width: 1000px; max-width: none; border: 0; border-radius: 0; }
+  .scroll-hint { display: block; }
+  .hero-top, .split, .cols { grid-template-columns: minmax(0, 1fr); }
+  .gallery { grid-template-columns: minmax(0, 1fr); }
+  .steps { grid-template-columns: minmax(0, 1fr); }
+  .tabs li { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+  .brand-sub { display: none; }
+  main { gap: 48px; padding-block: 32px 44px; }
+  .strip, .panel, .notice { padding: 16px; }
+  .primers div { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<div class="site" id="site">
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <!-- AllPrime logosu.
+       E: duz harf. K: dik cizgisi cift sarmal (iki tonlu iplik + basamaklar),
+       kollari sarmaldan cikip uca dogru sivrilen iki kristal; uclari parlak.
+       Tek kaynak: ust bar, onay ekrani ve pencere ikonu buradan uretilir. -->
+  <defs>
+    <linearGradient id="teal" gradientUnits="userSpaceOnUse" x1="8" y1="8" x2="56" y2="56">
+      <stop offset="0" stop-color="#7cf3e2"/><stop offset="1" stop-color="#0d9488"/>
+    </linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1c2330"/><stop offset="1" stop-color="#0b1015"/>
+    </linearGradient>
+    <linearGradient id="gem" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="0.45" stop-color="#c8fff6"/><stop offset="1" stop-color="#2dd4bf"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#bg)" stroke="#2a3342" stroke-width="1.5"/>
+
+  <!-- E -->
+  <g stroke="url(#teal)" stroke-width="6.5" stroke-linecap="round" fill="none">
+    <path d="M13 16 V48"/><path d="M13 16 H26"/><path d="M13 32 H24"/><path d="M13 48 H26"/>
+  </g>
+
+  <!-- K omurgasi: dikey cift sarmal (arka iplik koyu, on iplik acik) -->
+  <g stroke-width="4.2" stroke-linecap="round" fill="none">
+    <path d="M37 14 Q29 23 37 32 T37 50" stroke="#0f9f8f"/>
+    <path d="M37 14 Q45 23 37 32 T37 50" stroke="#7cf3e2"/>
+  </g>
+  <g stroke="#5eead4" stroke-width="2.4" stroke-linecap="round">
+    <path d="M33.5 20 H40.5 M32.5 25.5 H41.5 M32.5 38.5 H41.5 M33.5 44 H40.5"/>
+  </g>
+
+  <!-- K kollari: uca dogru sivrilen kristaller, E ile ayni yukseklikte -->
+  <g transform="translate(40 32)">
+    <g transform="rotate(-45)">
+      <path d="M0 0 L11.04 -3.8 L23 0 L11.04 3.8 Z" fill="url(#teal)" stroke="#06231f" stroke-width="0.6"/>
+      <path d="M15.5 -2.356 L23 0 L15.5 2.356 Z" fill="url(#gem)" opacity="0.95"/>
+    </g>
+    <g transform="rotate(45)">
+      <path d="M0 0 L11.04 -3.8 L23 0 L11.04 3.8 Z" fill="url(#teal)" stroke="#06231f" stroke-width="0.6"/>
+      <path d="M15.5 -2.356 L23 0 L15.5 2.356 Z" fill="url(#gem)" opacity="0.95"/>
+    </g>
+  </g>
+</svg></span>
+      <div>
+        <p class="brand-name">AllPrime</p>
+        <p class="brand-sub"><span class="tr">Varyanta özgü primer tasarımı · primer3 motoru</span><span class="en">Variant-specific primer design · primer3 engine</span></p>
+      </div>
+    </div>
+    <div class="lang" role="group" aria-label="Dil / Language">
+      <button type="button" id="lang-tr" data-lang="tr" aria-pressed="true" lang="tr">TR</button>
+      <button type="button" id="lang-en" data-lang="en" aria-pressed="false" lang="en">EN</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ===== Hero ===== -->
+  <section class="hero" aria-labelledby="h-hero">
+    <div class="hero-top">
+      <div class="hero-text">
+        <h1 id="h-hero"><span class="tr">Varyanta özgü primer tasarımı, kendi bilgisayarınızda</span><span class="en">Variant-specific primer design on your own computer</span></h1>
+        <p class="lead"><span class="tr">AllPrime, primer3 hesaplama motorunu kullanan bir Windows masaüstü programıdır. Genomik koordinat, transkript ya da yapıştırılan dizi üzerinde primer çifti tasarlar, delesyon ve duplikasyonlar için kırılma noktası primerleri önerir ve elinizdeki primerleri değerlendirir. Tüm hesaplama yerel makinede yapılır.</span><span class="en">AllPrime is a Windows desktop program built on the primer3 calculation engine. It designs primer pairs on a genomic coordinate, a transcript or a pasted sequence, proposes breakpoint primers for deletions and duplications, and evaluates primers you already have. All computation runs on the local machine.</span></p>
+        <ul class="facts">
+          <li class="chip"><b>Windows 10 / 11</b> · 64 bit</li>
+          <li class="chip"><span class="tr">Referans genom</span><span class="en">Reference genome</span> <b>GRCh38 · GRCh37</b></li>
+          <li class="chip"><b>TR / EN</b></li>
+          <li class="chip"><b>GNU GPL</b> <span class="tr">v2 veya sonrası</span><span class="en">v2 or later</span></li>
+        </ul>
+      </div>
+      <div class="dl">
+        <a class="btn" id="download" href="https://github.com/allprime-app/AllPrime/releases/latest" target="_blank" rel="noopener"><span class="tr">İndir (Windows)</span><span class="en">Download (Windows)</span></a>
+        <small><span class="tr">Windows 10 ya da 11, 64 bit · zip, yaklaşık 360 MB. Bağlantı GitHub'daki en son sürümün sayfasını açar.</span><span class="en">Windows 10 or 11, 64-bit · zip, about 360 MB. The link opens the page of the latest release on GitHub.</span></small>
+      </div>
+    </div>
+
+    <figure class="shot">
+      <div class="crop trim-right" style="--ar: 1708 / 740; --pos: 0% 0%;">
+        <img class="tr shot-dark" src="img/tasarim-koyu-tr.png" width="1708" height="1075" alt="AllPrime penceresi, koyu tema: üst çubukta TR/EN, referans genom GRCh38/GRCh37, Favoriler ve Ayarlar; altında DNA · genomik, RNA · cDNA, Dizi, Kırılma noktası ve Değerlendir sekmeleri; TP53, kromozom 17, koordinat 7676154 girilmiş tasarım formu.">
+        <img class="en shot-dark" src="img/tasarim-koyu-en.png" width="1708" height="1075" alt="AllPrime window, dark theme: top bar with TR/EN, reference genome GRCh38/GRCh37, Favorites and Settings; below it the DNA · genomic, RNA · cDNA, Sequence, Breakpoint and Evaluate tabs; the design form filled with TP53, chromosome 17, coordinate 7676154.">
+        <img class="tr shot-light" src="img/tasarim-acik-tr.png" width="1708" height="1075" alt="AllPrime penceresi, açık tema: aynı DNA · genomik tasarım formu, TP53, kromozom 17, koordinat 7676154.">
+        <img class="en shot-light" src="img/tasarim-acik-en.png" width="1708" height="1075" alt="AllPrime window, light theme: the same DNA · genomic design form, TP53, chromosome 17, coordinate 7676154.">
+      </div>
+      <figcaption><span class="tr"><b>DNA · genomik</b> sekmesi, sürüm 1.1.3. Sayfa açık ya da koyu temada, programın aynı temadaki görüntüsünü gösterir.</span><span class="en">The <b>DNA · genomic</b> tab, version 1.1.3. The page shows the program in the same light or dark theme as the page.</span></figcaption>
+    </figure>
+  </section>
+
+  <!-- ===== A real result, drawn to scale ===== -->
+  <section aria-labelledby="h-strip">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Bir sonuç, ölçekli</span><span class="en">One result, to scale</span></p>
+      <h2 id="h-strip"><span class="tr">TP53, chr17:7.676.154 çevresinde 330 bp'lik bir ürün</span><span class="en">A 330 bp product around TP53, chr17:7,676,154</span></h2>
+      <p class="muted"><span class="tr">TP53 eksi (−) iplikte olduğu için ürün genin okuma yönünde, Forward'dan başlayarak gösterilir. Girilen konum ürünün 235. bazıdır.</span><span class="en">TP53 is on the minus (−) strand, so the product is shown in the gene's reading direction, starting from the Forward primer. The entered position is base 235 of the product.</span></p>
+    </div>
+    <div class="strip">
+      <div class="strip-scroll">
+        <svg viewBox="0 0 680 140" role="img" aria-labelledby="strip-title">
+          <title id="strip-title">Amplicon 330 bp: Forward 1–20, Reverse 311–330, chr17:7676154 = 235</title>
+          <!-- scale: base b at x = 40 + (b - 0.5) * 600 / 330 -->
+          <line x1="40" y1="64" x2="640" y2="64" stroke="var(--input-border)" stroke-width="2"/>
+          <rect x="40" y="58" width="600" height="12" rx="2" fill="var(--panel-2)" stroke="var(--border)"/>
+          <!-- Forward 1-20 -->
+          <path d="M40 40 H70.5 L76.4 46 L70.5 52 H40 Z" fill="var(--fwd)"/>
+          <text x="40" y="32" font-size="13" font-weight="600" fill="var(--fwd)" font-family="IBM Plex Sans, Segoe UI, sans-serif">Forward</text>
+          <!-- Reverse 311-330 -->
+          <path d="M640 76 H609.5 L603.6 82 L609.5 88 H640 Z" fill="var(--rev)"/>
+          <text x="640" y="105" font-size="13" font-weight="600" fill="var(--rev)" text-anchor="end" font-family="IBM Plex Sans, Segoe UI, sans-serif">Reverse</text>
+          <!-- entered position, base 235 -->
+          <rect x="465.5" y="52" width="3" height="24" fill="var(--hedef)"/>
+          <text x="467" y="44" font-size="12" fill="var(--hedef)" text-anchor="middle" font-family="IBM Plex Mono, Consolas, monospace">235</text>
+          <!-- ticks -->
+          <g stroke="var(--muted)" stroke-width="1">
+            <line x1="40.9" y1="112" x2="40.9" y2="118"/>
+            <line x1="220.9" y1="112" x2="220.9" y2="118"/>
+            <line x1="402.7" y1="112" x2="402.7" y2="118"/>
+            <line x1="584.5" y1="112" x2="584.5" y2="118"/>
+          </g>
+          <g font-size="11" fill="var(--muted)" text-anchor="middle" font-family="IBM Plex Mono, Consolas, monospace">
+            <text x="40.9" y="132">1</text>
+            <text x="220.9" y="132">100</text>
+            <text x="402.7" y="132">200</text>
+            <text x="584.5" y="132">300</text>
+          </g>
+        </svg>
+      </div>
+      <dl class="primers">
+        <div><dt class="c-fwd">Forward</dt><dd>5'-CGTTCTGGTAAGGACAAGGG-3' <span>· 20 nt · Tm 57,9 °C · GC %55 · 7.676.369–7.676.388</span></dd></div>
+        <div><dt class="c-rev">Reverse</dt><dd>5'-GGTAGGTTTTCTGGGAAGGG-3' <span>· 20 nt · Tm 57,5 °C · GC %55 · 7.676.059–7.676.078</span></dd></div>
+      </dl>
+      <div class="strip-meta">
+        <span class="chip"><span class="tr">Amplikon</span><span class="en">Amplicon</span> <b>330 bp</b></span>
+        <span class="chip"><span class="tr">Ta önerisi</span><span class="en">Suggested Ta</span> <b>52,5 °C</b></span>
+        <span class="chip"><span class="tr">Referans genom</span><span class="en">Reference genome</span> <b>GRCh38</b></span>
+        <span class="chip"><span class="c-hedef">■</span> <span class="tr">girilen konum</span><span class="en">entered position</span> <b>chr17:7.676.154</b></span>
+      </div>
+      <p class="muted" style="font-size:.85rem"><span class="tr">Değerler programın bu konum için verdiği bir çiftten, Favoriler ekranındaki kayıttan alınmıştır. Program çıktısıdır; laboratuvarda doğrulanmış bir sonuç değildir.</span><span class="en">Values are taken from a pair the program gave for this position, as saved on the Favorites screen. This is program output, not a laboratory-validated result.</span></p>
+    </div>
+  </section>
+
+  <!-- ===== Tabs ===== -->
+  <section aria-labelledby="h-tabs">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Sekmeler</span><span class="en">Tabs</span></p>
+      <h2 id="h-tabs"><span class="tr">Beş sekme, beş iş</span><span class="en">Five tabs, five jobs</span></h2>
+    </div>
+    <ul class="tabs">
+      <li>
+        <span class="tab-name"><span class="tr">DNA · genomik</span><span class="en">DNA · genomic</span></span>
+        <div class="tab-body">
+          <p class="tr">Genomik koordinat verilir, primerler doğrudan genom üzerinde tasarlanır. Tek koordinat (nokta varyant) ya da aralık (varyantın tamamı) yazılabilir; aralık verilince primerler aralığın ve iki yandaki payın dışına konur.</p>
+          <p class="en">You give a genomic coordinate and primers are designed directly on the genome. Enter a single coordinate (point variant) or a range (the whole variant); with a range, primers are placed outside it and outside a margin on each side.</p>
+        </div>
+      </li>
+      <li>
+        <span class="tab-name">RNA · cDNA</span>
+        <div class="tab-body">
+          <p class="tr">Transkript kodu (NM_) verilir, şablon intronsuz cDNA'dır. NM kodunu bilmiyorsanız gen sembolüyle arayabilirsiniz; MANE Select transkript işaretli gelir. İki tasarım tipi vardır: <span class="ui">Varyant (c.)</span> ve <span class="ui">Ekson atlama testi</span>. İkisinde de <b>Primer ekson sınırının üzerine otursun</b> seçeneğiyle primerlerden biri iki eksonun birleştiği yere konabilir; böyle bir çift genomik DNA'dan ürün vermez ve kartta <b>gDNA: çoğalmaz</b> yazar. Öbür çiftlerde gDNA'daki ürün boyu gösterilir. Bu sekme transkripti her zaman GRCh38 genomundan kurar.</p>
+          <p class="en">You give a transcript accession (NM_); the template is intron-free cDNA. If you do not know the NM accession you can search by gene symbol; the MANE Select transcript is flagged. There are two design types: <span class="ui">Variant (c.)</span> and <span class="ui">Exon skipping assay</span>. Both have a <b>Place one primer across an exon junction</b> option that puts one primer where two exons join; such a pair gives no product from genomic DNA and its card says <b>gDNA: no product</b>. For other pairs the gDNA product size is shown. This tab always builds the transcript from the GRCh38 genome.</p>
+        </div>
+      </li>
+      <li>
+        <span class="tab-name"><span class="tr">Dizi</span><span class="en">Sequence</span></span>
+        <div class="tab-body">
+          <p class="tr">Genom ya da transkript gerekmez; diziyi doğrudan yapıştırırsınız. <span class="ui">Tek dizi</span> modunda hedef köşeli parantezle ya da konumla işaretlenebilir. <span class="ui">İki dizi (F / R bölgesi)</span> modunda forward primer birinci, reverse primer ikinci dizinin içinden seçilir; füzyon transkripti bu modla tasarlanır.</p>
+          <p class="en">No genome or transcript is needed; you paste the sequence. In <span class="ui">Single sequence</span> mode the target can be marked with square brackets or a position. In <span class="ui">Two sequences (F / R regions)</span> mode the forward primer is chosen from the first sequence and the reverse primer from the second; fusion transcripts are designed this way.</p>
+        </div>
+      </li>
+      <li>
+        <span class="tab-name"><span class="tr">Kırılma noktası</span><span class="en">Breakpoint</span></span>
+        <div class="tab-body">
+          <p class="tr">Delesyon ya da duplikasyonun sınırları girilir. Delesyonda primerler silinen bölgenin iki yanına konur (gap-PCR); tandem duplikasyonda bölgenin içine, dışa bakacak şekilde. Sınırlar MLPA, array ya da ekzom gibi yaklaşık bir yöntemden geliyorsa ± bp belirsizlik girilebilir. İsteğe bağlı bir kontrol primeri (3. primer) eklenebilir. Her çift için genotipe göre beklenen bantlar tabloda gösterilir.</p>
+          <p class="en">You enter the boundaries of a deletion or duplication. For a deletion the primers flank the deleted region (gap-PCR); for a tandem duplication they sit inside the region, facing outward. If the boundaries come from an approximate method such as MLPA, array or exome, a ± bp uncertainty can be entered. An optional control primer (3rd primer) can be added. The expected bands for each genotype are shown in a table for every pair.</p>
+        </div>
+      </li>
+      <li>
+        <span class="tab-name"><span class="tr">Değerlendir</span><span class="en">Evaluate</span></span>
+        <div class="tab-body">
+          <p class="tr">Elinizdeki bir primer çiftini inceler, yeni primer tasarlamaz: <span class="ui">DNA (genomik)</span> ya da <span class="ui">RNA / cDNA</span> modunda genomda nereye oturduğunu, ne ürün vereceğini ve vermiyorsa nedenini söyler. Sonuç üç düzeyli bir kararla başlar: <span class="ui">Sorun görünmüyor</span>, <span class="ui">Dikkat edilmesi gerekenler var</span> ya da <span class="ui">Ciddi sorun var</span>.</p>
+          <p class="en">Examines a primer pair you already have; it does not design new primers. In <span class="ui">DNA (genomic)</span> or <span class="ui">RNA / cDNA</span> mode it tells you where the primers sit in the genome, what product they will give, and if they give none, why. The result opens with a three-level verdict: <span class="ui">No problems found</span>, <span class="ui">Points to watch</span> or <span class="ui">Serious problem</span>.</p>
+        </div>
+      </li>
+    </ul>
+  </section>
+
+  <!-- ===== Checks ===== -->
+  <section aria-labelledby="h-checks">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Denetimler</span><span class="en">Checks</span></p>
+      <h2 id="h-checks"><span class="tr">Tasarımla birlikte yapılan kontroller</span><span class="en">Checks that come with each design</span></h2>
+    </div>
+    <div class="split">
+      <dl class="feat">
+        <div>
+          <dt><span class="tr">Yaygın varyant (dbSNP) kaçınması</span><span class="en">Common-variant (dbSNP) avoidance</span></dt>
+          <dd><span class="tr">Primerin bağlandığı yerde yaygın bir varyant varsa o allel çoğalmaz ve heterozigot hasta homozigot görünür. Program bu konumları tasarım sırasında otomatik olarak devre dışı bırakır. Bölge çok yoğunsa kısıt gevşetilir ve bu sonuçların üstünde bildirilir.</span><span class="en">If a common variant sits where a primer binds, that allele does not amplify and a heterozygous patient looks homozygous. The program excludes these positions automatically during design. If the region is too dense, the constraint is relaxed and you are told so above the results.</span></dd>
+        </div>
+        <div>
+          <dt><span class="tr">Genom çapında özgüllük kontrolü</span><span class="en">Genome-wide specificity check</span></dt>
+          <dd><span class="tr">Her sonuç kartındaki <b>⌕ Özgüllüğü kontrol et</b> düğmesi, çiftin genomda istenmeyen ürün verip vermediğini yerel genom dosyası üzerinde tarar. DNA modunda çiftler arka planda otomatik taranır ve kartlara <b>Özgül</b>, <b>Orta riskli yan ürün</b> ya da <b>Yüksek riskli yan ürün</b> rozeti eklenir. Rozetler yalnızca işarettir: hiçbir çift atılmaz, sıralama değişmez.</span><span class="en">The <b>⌕ Check specificity</b> button on each result card scans the local genome file for unwanted products of the pair. In DNA mode the pairs are scanned automatically in the background and each card gets a <b>Specific</b>, <b>Medium-risk side product</b> or <b>High-risk side product</b> badge. Badges are only markers: no pair is removed and the order does not change.</span></dd>
+        </div>
+        <div>
+          <dt><span class="tr">Psödogen / yakın-özdeş kopya uyarısı</span><span class="en">Pseudogene / near-identical copy warning</span></dt>
+          <dd><span class="tr">PMS2/PMS2CL ya da CYP21A2/CYP21A1P gibi neredeyse birebir kopyası olan bir gende çalıştığınızda sonuçların üstünde kopyanın adı, kromozomu ve benzerlik oranıyla bir uyarı çıkar. DNA tasarımında kurallara uyan bütün adaylar genomda taranır ve kopyadan ayrışan Özgül çiftler <b>Kopyadan ayrışan çiftler</b> bölümünde listelenir. Uyarı bir hüküm değildir; bu genlerde ürünü Sanger ile okuyup hangi kopyadan geldiğini kontrol edin.</span><span class="en">When you work on a gene with a near-identical copy, such as PMS2/PMS2CL or CYP21A2/CYP21A1P, a warning above the results names the copy, its chromosome and the similarity. In DNA design every candidate that meets the rules is scanned in the genome, and specific pairs that separate from the copy are listed under <b>Pairs that separate from the copy</b>. The warning is not a verdict; for these genes, read the product by Sanger and check which copy it came from.</span></dd>
+        </div>
+        <div>
+          <dt><span class="tr">Primer genin neresinde (ekzon / intron)</span><span class="en">Where the primer sits in the gene (exon / intron)</span></dt>
+          <dd><span class="tr">DNA ve Kırılma noktası sekmelerinde her primerin yanında <b>Gen bölgesi</b> sütunu ekzon, intron ya da ikisinin sınırını yazar. Program MANE Select transkripti tercih eder.</span><span class="en">In the DNA and Breakpoint tabs, a <b>Gene region</b> column next to each primer gives the exon, the intron or the boundary between them. The program prefers the MANE Select transcript.</span></dd>
+        </div>
+      </dl>
+      <figure class="shot">
+        <div class="shot-scroll" tabindex="0" role="region" data-label-tr="Psödogen uyarısı ekran görüntüsü (yana kaydırılabilir)" data-label-en="Pseudogene warning screenshot (scrolls sideways)" aria-label="Psödogen uyarısı ekran görüntüsü (yana kaydırılabilir)">
+          <div class="crop" style="--ar: 1708 / 640; --pos: 0% 20%;">
+            <img class="tr" src="img/kopya-tr.png" width="1708" height="1075" alt="CYP21A2 tasarımı: sonuçların üstünde CYP21A1P psödogen uyarısı, altında Kopyadan ayrışan çiftler tablosu (ilk 8 Özgül çift, taranan 5.217 aday) ve Yüksek riskli yan ürün rozetli 1. kart.">
+            <img class="en" src="img/kopya-en.png" width="1708" height="1075" alt="CYP21A2 design: a CYP21A1P pseudogene warning above the results, the Pairs that separate from the copy table below it (first 8 specific pairs, 5,217 candidates scanned) and card 1 with a High-risk side product badge.">
+          </div>
+        </div>
+        <p class="scroll-hint"><span class="tr">Görüntüyü yana kaydırın</span><span class="en">Scroll the image sideways</span></p>
+        <figcaption><span class="tr"><b>CYP21A2</b> (GRCh38, chr6:32.040.495): psödogen uyarısı ve kopyadan ayrışan çiftler.</span><span class="en"><b>CYP21A2</b> (GRCh38, chr6:32,040,495): pseudogene warning and pairs that separate from the copy.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== Gallery ===== -->
+  <section aria-labelledby="h-gallery">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Ekranlar</span><span class="en">Screens</span></p>
+      <h2 id="h-gallery"><span class="tr">Sonuç kartları</span><span class="en">Result cards</span></h2>
+      <p class="muted"><span class="tr">Programdan alınmış ekran görüntüleri, sürüm 1.1.3, koyu tema.</span><span class="en">Screenshots taken from the program, version 1.1.3, dark theme. The cards below show the Turkish interface.</span></p>
+    </div>
+    <div class="gallery">
+      <figure class="shot wide">
+        <div class="shot-scroll" tabindex="0" role="region" data-label-tr="DNA · genomik kartı ekran görüntüsü (yana kaydırılabilir)" data-label-en="DNA · genomic card screenshot (scrolls sideways)" aria-label="DNA · genomik kartı ekran görüntüsü (yana kaydırılabilir)">
+          <div class="crop" style="--ar: 1708 / 318; --pos: 0% 0%;">
+            <img src="img/dna-kart-tr.png" width="1708" height="960" data-alt-tr="DNA · genomik sonuç kartı: CFTR, Forward ve Reverse primer dizileri, Tm, GC, pozisyon, Gen bölgesi (intron 10, intron 11), Konum satırı ve IGV için kopyala düğmesi." data-alt-en="DNA · genomic result card (Turkish interface): CFTR, Forward and Reverse primer sequences, Tm, GC, position, gene region (intron 10, intron 11), the position line and the Copy for IGV button." alt="DNA · genomik sonuç kartı: CFTR, Forward ve Reverse primer dizileri, Tm, GC, pozisyon, Gen bölgesi (intron 10, intron 11), Konum satırı ve IGV için kopyala düğmesi.">
+          </div>
+        </div>
+        <p class="scroll-hint"><span class="tr">Görüntüyü yana kaydırın</span><span class="en">Scroll the image sideways</span></p>
+        <figcaption><span class="tr"><b>DNA · genomik</b> kartı (CFTR, GRCh38, chr7:117.559.590). İkinci satırda primerlerin kapsadığı aralık ve <b>IGV için kopyala</b> düğmesi.</span><span class="en"><b>DNA · genomic</b> card (CFTR, GRCh38, chr7:117,559,590). The second line gives the range the primers cover and the <b>Copy for IGV</b> button.</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="shot-scroll" tabindex="0" role="region" data-label-tr="RNA · cDNA kartı ekran görüntüsü (yana kaydırılabilir)" data-label-en="RNA · cDNA card screenshot (scrolls sideways)" aria-label="RNA · cDNA kartı ekran görüntüsü (yana kaydırılabilir)">
+          <div class="crop" style="--ar: 1708 / 318; --pos: 0% 0%;">
+            <img src="img/rna-kart-tr.png" width="1708" height="960" data-alt-tr="RNA · cDNA sonuç kartı: TP53, cDNA ürün 364 bp, gDNA 11.344 bp, kapsanan ekson sınırı 3, primerlerin ekson ve cDNA konumları." data-alt-en="RNA · cDNA result card (Turkish interface): TP53, cDNA product 364 bp, gDNA 11,344 bp, 3 exon junctions spanned, exon and cDNA position of each primer." alt="RNA · cDNA sonuç kartı: TP53, cDNA ürün 364 bp, gDNA 11.344 bp, kapsanan ekson sınırı 3, primerlerin ekson ve cDNA konumları.">
+          </div>
+        </div>
+        <p class="scroll-hint"><span class="tr">Görüntüyü yana kaydırın</span><span class="en">Scroll the image sideways</span></p>
+        <figcaption><span class="tr"><b>RNA · cDNA</b> kartı (NM_000546, c.215): cDNA ve gDNA ürün boyu yan yana.</span><span class="en"><b>RNA · cDNA</b> card (NM_000546, c.215): cDNA and gDNA product sizes side by side.</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="shot-scroll" tabindex="0" role="region" data-label-tr="Kırılma noktası kartı ekran görüntüsü (yana kaydırılabilir)" data-label-en="Breakpoint card screenshot (scrolls sideways)" aria-label="Kırılma noktası kartı ekran görüntüsü (yana kaydırılabilir)">
+          <div class="crop" style="--ar: 1708 / 590; --pos: 0% 0%;">
+            <img src="img/kirilma-kart-tr.png" width="1708" height="960" data-alt-tr="Kırılma noktası sonuç kartı: GNAT2 delesyonu; kırılma bandı 430 bp, kontrol bandı 284 bp, normal alel 2.101 bp; Forward, Reverse ve Kontrol primeri, gen bölgesi GNAT2 intron 2 ve intron 4; Normal, Heterozigot delesyon ve Homozigot delesyon için beklenen bantlar tablosu." data-alt-en="Breakpoint result card (Turkish interface): GNAT2 deletion; breakpoint band 430 bp, control band 284 bp, normal allele 2,101 bp; Forward, Reverse and Control primers, gene region GNAT2 intron 2 and intron 4; table of expected bands for normal, heterozygous deletion and homozygous deletion." alt="Kırılma noktası sonuç kartı: GNAT2 delesyonu; kırılma bandı 430 bp, kontrol bandı 284 bp, normal alel 2.101 bp; Forward, Reverse ve Kontrol primeri, gen bölgesi GNAT2 intron 2 ve intron 4; Normal, Heterozigot delesyon ve Homozigot delesyon için beklenen bantlar tablosu.">
+          </div>
+        </div>
+        <p class="scroll-hint"><span class="tr">Görüntüyü yana kaydırın</span><span class="en">Scroll the image sideways</span></p>
+        <figcaption><span class="tr"><b>Kırılma noktası</b> kartı (GNAT2 delesyonu, GRCh38, chr1:109.609.703–109.611.373) kontrol primeriyle: genotipe göre beklenen bantlar.</span><span class="en"><b>Breakpoint</b> card (GNAT2 deletion, GRCh38, chr1:109,609,703–109,611,373) with a control primer: expected bands by genotype.</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="shot-scroll" tabindex="0" role="region" data-label-tr="Değerlendir sonucu ekran görüntüsü (yana kaydırılabilir)" data-label-en="Evaluate result screenshot (scrolls sideways)" aria-label="Değerlendir sonucu ekran görüntüsü (yana kaydırılabilir)">
+          <div class="crop" style="--ar: 1708 / 470; --pos: 0% 8%;">
+            <img src="img/degerlendir-tr.png" width="1708" height="960" data-alt-tr="Değerlendir sonucu: en üstte Sorun görünmüyor kararı, Bulgular, Primer özellikleri tablosu (Tm, GC, hairpin, self, 3' self) ve Favorilerde düğmesi." data-alt-en="Evaluate result (Turkish interface): the No problems found verdict at the top, findings, primer properties table (Tm, GC, hairpin, self, 3' self) and the In favorites button." alt="Değerlendir sonucu: en üstte Sorun görünmüyor kararı, Bulgular, Primer özellikleri tablosu (Tm, GC, hairpin, self, 3' self) ve Favorilerde düğmesi.">
+          </div>
+        </div>
+        <p class="scroll-hint"><span class="tr">Görüntüyü yana kaydırın</span><span class="en">Scroll the image sideways</span></p>
+        <figcaption><span class="tr"><b>Değerlendir</b> sonucu: karar, bulgular ve primer özellikleri.</span><span class="en"><b>Evaluate</b> result: verdict, findings and primer properties.</span></figcaption>
+      </figure>
+      <figure class="shot">
+        <div class="shot-scroll" tabindex="0" role="region" data-label-tr="Favoriler ekranı ekran görüntüsü (yana kaydırılabilir)" data-label-en="Favorites screen screenshot (scrolls sideways)" aria-label="Favoriler ekranı ekran görüntüsü (yana kaydırılabilir)">
+          <div class="crop" style="--ar: 1708 / 560; --pos: 0% 0%;">
+            <img class="tr" src="img/favoriler-tr.png" width="1708" height="960" alt="Favoriler ekranı: arama kutusu, Listeyi CSV indir düğmesi ve kaydedilmiş primer çiftleri; her kayıtta tarih, sekme, referans genom ve Değerlendir'de aç düğmesi.">
+            <img class="en" src="img/favoriler-en.png" width="1708" height="960" alt="Favorites screen: search box, Download list as CSV button and saved primer pairs; each entry shows date, tab, reference genome and an Open in Evaluate button.">
+          </div>
+        </div>
+        <p class="scroll-hint"><span class="tr">Görüntüyü yana kaydırın</span><span class="en">Scroll the image sideways</span></p>
+        <figcaption><span class="tr"><b>Favoriler</b>: kaydedilen çiftler yalnızca bu bilgisayarda saklanır.</span><span class="en"><b>Favorites</b>: saved pairs are stored on this computer only.</span></figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ===== Installation (KURULUM.txt 36-84) ===== -->
+  <section aria-labelledby="h-install">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Kurulum</span><span class="en">Installation</span></p>
+      <h2 id="h-install"><span class="tr">Üç adımda çalışır</span><span class="en">Running in three steps</span></h2>
+    </div>
+    <ol class="steps">
+      <li>
+        <h3><span class="tr">Zip'i indirin, kısa yollu bir klasöre açın</span><span class="en">Download the zip and extract it to a short path</span></h3>
+        <p><span class="tr">Yukarıdaki <b>İndir</b> düğmesinin açtığı sayfadan <code>AllPrime-&lt;sürüm&gt;-win-x64.zip</code> dosyasını indirin ve kısa yollu bir klasöre açın, örneğin <code>C:\AllPrime\</code>; iç içe çok sayıda klasörün altına açmayın. Programdaki en derin dosya yolu 142 karakterdir; Windows'un 260 karakter sınırı nedeniyle çok derin bir klasöre açılırsa "yol çok uzun" hatası alınır ve dosyalar eksik çıkar. Kurulum programı yoktur; program klasörden çalışır.</span><span class="en">From the page the <b>Download</b> button opens, download <code>AllPrime-&lt;version&gt;-win-x64.zip</code> and extract it to a folder with a short path, for example <code>C:\AllPrime\</code>; avoid deeply nested folders. The deepest file path in the program is 142 characters; because of the Windows 260-character limit, extracting into a deeply nested folder gives a "path too long" error and leaves files missing. There is no installer; the program runs from the folder.</span></p>
+      </li>
+      <li>
+        <h3><span class="tr">AllPrime.exe ile başlatın</span><span class="en">Start AllPrime.exe</span></h3>
+        <p><span class="tr">Program imzalı olmadığı için Windows ilk açılışta bir uyarı gösterebilir. İlk açılışta pencerenin gelmesi 20–50 saniye sürebilir; bu sırada ekranda bir şey görünmez. Sonraki açılışlar birkaç saniye sürer.</span><span class="en">The program is not code-signed, so Windows may show a warning on first launch. On first launch the window may take 20–50 seconds to appear, with nothing on screen meanwhile. Later launches take a few seconds.</span></p>
+      </li>
+      <li>
+        <h3><span class="tr">Genomu indirin</span><span class="en">Download the genome</span></h3>
+        <p><span class="tr">Programda <b>⚙ Ayarlar</b> › <b>Veri dosyaları (indirme)</b> bölümünden kullanacağınız genom derlemesini indirin (her biri yaklaşık 3 GB; kaynağı Ensembl) ya da genom dosyalarını, yanlarındaki <code>.fai</code> indeks dosyalarıyla birlikte, <code>AllPrime.exe</code>'nin yanındaki <code>genomes</code> klasörüne elle kopyalayın. Transkript tabloları ve yaygın varyant dizinleri paketle birlikte gelir. Program bir genomu kullanmadan önce denetler; eksik ya da kesik bir genom kullanılmaz, nedeni Ayarlar'da yazılır.</span><span class="en">In the program, download the genome assembly you need from <b>⚙ Settings</b> › <b>Data files (download)</b> (about 3 GB each; source: Ensembl), or copy the genome files by hand, together with their <code>.fai</code> index files, into a <code>genomes</code> folder next to <code>AllPrime.exe</code>. Transcript tables and common-variant indexes come with the package. The program checks a genome before using it; a missing or truncated genome is not used, and the reason is shown in Settings.</span></p>
+      </li>
+    </ol>
+    <p class="muted"><span class="tr">Ayrıntılı kurulum ve kullanım kılavuzu paketin içindedir: <code>KURULUM.txt</code> (Türkçe) ve <code>USER_GUIDE.txt</code> (İngilizce).</span><span class="en">The detailed installation and user guide is inside the package: <code>USER_GUIDE.txt</code> (English) and <code>KURULUM.txt</code> (Turkish).</span></p>
+  </section>
+
+  <!-- ===== Records & interface ===== -->
+  <section aria-labelledby="h-work">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Kayıt ve arayüz</span><span class="en">Records and interface</span></p>
+      <h2 id="h-work"><span class="tr">Sonucu saklamak, taşımak, okumak</span><span class="en">Keeping, moving and reading results</span></h2>
+    </div>
+    <div class="cols">
+      <dl class="feat">
+        <div>
+          <dt><span class="tr">Favoriler</span><span class="en">Favorites</span></dt>
+          <dd><span class="tr">Her tasarım kartında ve Değerlendir sonucunda <b>☆ Favorilere ekle</b> düğmesi vardır; isteğe bağlı bir not eklenebilir. Liste gen, konum, primer dizisi ve notta aranır, <b>Değerlendir'de aç</b> ile yeniden değerlendirilir, <b>Listeyi CSV indir</b> ile dışa aktarılır. Kayıtlar yalnızca bu bilgisayarda saklanır.</span><span class="en">Every design card and every Evaluate result has an <b>☆ Add to favorites</b> button; an optional note can be added. The list can be searched by gene, position, primer sequence and note, re-evaluated with <b>Open in Evaluate</b>, and exported with <b>Download list as CSV</b>. Entries are stored on this computer only.</span></dd>
+        </div>
+        <div>
+          <dt><span class="tr">IGV için kopyala</span><span class="en">Copy for IGV</span></dt>
+          <dd><span class="tr">DNA, RNA ve Kırılma noktası kartlarının ikinci satırında primerlerin kapsadığı genomik aralık yazar; düğme bu aralığı IGV'nin arama kutusunun anladığı biçimde kopyalar (örn. <code>chr7:117559410-117559715</code>).</span><span class="en">The second line of DNA, RNA and Breakpoint cards gives the genomic range the primers cover; the button copies it in a form the IGV search box understands (e.g. <code>chr7:117559410-117559715</code>).</span></dd>
+        </div>
+        <div>
+          <dt>CSV</dt>
+          <dd><span class="tr">Sonuçlar <b>CSV indir</b> ile dışa aktarılır. CSV başlıkları seçilen dilde gelir; DNA, RNA ve Kırılma noktası dosyalarının son iki sütunu derleme ve kromozomdur.</span><span class="en">Results are exported with <b>Download CSV</b>. CSV headers follow the chosen language; the last two columns of DNA, RNA and Breakpoint files are the assembly and the chromosome.</span></dd>
+        </div>
+      </dl>
+      <dl class="feat">
+        <div>
+          <dt><span class="tr">Türkçe ve İngilizce</span><span class="en">Turkish and English</span></dt>
+          <dd><span class="tr">Üst bardaki TR / EN ile değişir. Arayüzün tamamı, hata mesajları, uyarı notları ve CSV başlıkları seçilen dilde gelir. Ayrıntılı kılavuz da iki dildedir.</span><span class="en">Switched with TR / EN in the top bar. The whole interface, error messages, warning notes and CSV headers follow the chosen language. The detailed guide comes in both languages too.</span></dd>
+        </div>
+        <div>
+          <dt><span class="tr">Tema ve arayüz boyutu</span><span class="en">Theme and interface size</span></dt>
+          <dd><span class="tr">Tema: <b>Koyu</b>, <b>Açık</b> ya da <b>Windows'a uy</b>. Arayüz boyutu %90 ile %150 arasında ayarlanır; yazılar, düğmeler ve tablolar birlikte büyür.</span><span class="en">Theme: <b>Dark</b>, <b>Light</b> or <b>Follow Windows</b>. Interface size can be set from 90% to 150%; text, buttons and tables scale together.</span></dd>
+        </div>
+        <div>
+          <dt><span class="tr">Laboratuvar varsayılanları</span><span class="en">Laboratory defaults</span></dt>
+          <dd><span class="tr">Açılıştaki referans genom, çoğaltılabilen en uzun ürün ve gelişmiş parametreler (Mg²⁺, tuz, dNTP, DMSO, primer boyu, Tm …) laboratuvar varsayılanı olarak saklanabilir. Ayarlar yalnızca bu bilgisayarda saklanır.</span><span class="en">The start-up reference genome, the longest amplifiable product and the advanced parameters (Mg²⁺, salt, dNTP, DMSO, primer length, Tm …) can be saved as laboratory defaults. Settings are stored on this computer only.</span></dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- ===== Data, privacy, requirements ===== -->
+  <section aria-labelledby="h-data">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Veri ve gizlilik</span><span class="en">Data and privacy</span></p>
+      <h2 id="h-data"><span class="tr">Hesaplama yerel, veri dosyaları program içinden</span><span class="en">Local computation, data files from inside the program</span></h2>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3><span class="tr">Gizlilik</span><span class="en">Privacy</span></h3>
+        <ul>
+          <li><span class="tr">Tüm hesaplamalar yerel makinede yapılır. Veri dosyaları bilgisayarda olduktan sonra çalışmak için internet gerekmez; yalnızca dosyaları indirirken gerekir.</span><span class="en">All computation runs on the local machine. Once the data files are on the computer, no internet connection is needed to work; it is needed only to download the files.</span></li>
+          <li><span class="tr">Yerel genom tanıtılmamışsa dizi çekmek için Ensembl REST API kullanılabilir; bu durumda genomik koordinat sorgulanır. Transkript tablosu da tanıtılmamışsa ve konum gen sembolüyle verilmişse gen sembolü de sorgulanır. Hasta verisi gönderilmez.</span><span class="en">If no local genome is configured, the Ensembl REST API may be used to fetch sequence; in that case a genomic coordinate is queried. If the transcript table is not configured either and the position is given as a gene symbol, the gene symbol is queried as well. No patient data is transmitted.</span></li>
+          <li><span class="tr">Genom tanıtılmamışsa özgüllük kontrolü yapılamaz.</span><span class="en">Without a local genome the specificity check cannot run.</span></li>
+          <li><span class="tr">Favoriler, ayarlar ve açılış bildiriminin gösterildiği kaydı yalnızca bu bilgisayarda saklanır.</span><span class="en">Favorites, settings and the record that the start-up notice was shown are stored on this computer only.</span></li>
+        </ul>
+        <h3><span class="tr">Veri kaynakları</span><span class="en">Data sources</span></h3>
+        <ul>
+          <li><span class="tr">Referans genom dizileri:</span><span class="en">Reference genome sequences:</span> <a href="https://www.ensembl.org" target="_blank" rel="noopener">Ensembl</a> (GRCh37 / GRCh38)</li>
+          <li><span class="tr">Transkript ve ekson yapısı:</span><span class="en">Transcript and exon structure:</span> <a href="https://genome.ucsc.edu" target="_blank" rel="noopener">UCSC</a> refGene <span class="tr">(NCBI RefSeq türevi)</span><span class="en">(derived from NCBI RefSeq)</span></li>
+          <li><span class="tr">Kanonik transkript işaretlemesi:</span><span class="en">Canonical transcript flags:</span> <a href="https://www.ncbi.nlm.nih.gov/refseq/MANE/" target="_blank" rel="noopener">NCBI MANE</a></li>
+          <li><span class="tr">Yaygın varyantlar:</span><span class="en">Common variants:</span> UCSC snp151Common <span class="tr">(NCBI dbSNP b151 türevi)</span><span class="en">(derived from NCBI dbSNP b151)</span></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3><span class="tr">Sistem gereksinimi</span><span class="en">System requirements</span></h3>
+        <ul>
+          <li><span class="tr"><b>İşletim sistemi:</b> Windows 10 ya da 11, 64 bit. Windows 11'de ve Windows 10'da denendi.</span><span class="en"><b>Operating system:</b> Windows 10 or 11, 64-bit. Tested on Windows 11 and Windows 10.</span></li>
+          <li><span class="tr"><b>RAM:</b> önerilen 8 GB, en az 4 GB. 4 GB RAM'li bir Windows 10 bilgisayarda DNA, RNA ve kırılma noktası (duplikasyon) tasarımları çalıştı; genom taraması daha uzun sürdü; orada bellek ölçülmedi.</span><span class="en"><b>RAM:</b> 8 GB recommended, 4 GB minimum. On a 4 GB Windows 10 computer, DNA, RNA and breakpoint (duplication) designs worked; the genome scan took longer; memory was not measured there.</span></li>
+          <li><span class="tr"><b>Disk:</b> 8 GB boş yer önerilir.</span><span class="en"><b>Disk:</b> 8 GB of free space recommended.</span></li>
+        </ul>
+        <h3><span class="tr">Veri dosyaları</span><span class="en">Data files</span></h3>
+        <p class="muted"><span class="tr">Program içinden indirilir: <b>⚙ Ayarlar</b> › <b>Veri dosyaları (indirme)</b>. Genomlar Ensembl'den, diğerleri UCSC/NCBI'dan iner; indirme kaldığı yerden devam eder. Dosyalar elle de kopyalanabilir.</span><span class="en">Downloaded from inside the program: <b>⚙ Settings</b> › <b>Data files (download)</b>. Genomes come from Ensembl, the other files from UCSC/NCBI; an interrupted download resumes where it stopped. The files can also be copied in by hand.</span></p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th><span class="tr">Kalem</span><span class="en">Item</span></th><th style="text-align:right"><span class="tr">Boyut</span><span class="en">Size</span></th></tr></thead>
+            <tbody>
+              <tr><td><span class="tr">Kurulu uygulama</span><span class="en">Installed program</span></td><td class="num">0,4 GB</td></tr>
+              <tr><td><span class="tr">Genom FASTA, her derleme</span><span class="en">Genome FASTA, per assembly</span></td><td class="num">3,15 GB</td></tr>
+              <tr><td><span class="tr">dbSNP yaygın varyant dizini, her derleme</span><span class="en">dbSNP common-variant index, per assembly</span></td><td class="num">0,14 GB</td></tr>
+              <tr><td><span class="tr">refGene (iki derleme) + MANE özeti</span><span class="en">refGene (both assemblies) + MANE summary</span></td><td class="num">0,02 GB</td></tr>
+              <tr class="sum"><td><span class="tr">İki derleme ve bütün veriler</span><span class="en">Both assemblies and all data</span></td><td class="num"><span class="tr">yaklaşık</span><span class="en">about</span> 7,0 GB</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Notice ===== -->
+  <section class="notice" aria-labelledby="h-notice">
+    <h2 id="h-notice"><span class="tr">Bilgilendirme ve sorumluluk</span><span class="en">Notice and disclaimer</span></h2>
+    <ol>
+      <li><span class="tr">AllPrime, laboratuvar içi kullanım için geliştirilmiş bir primer tasarım aracıdır. Hasta verisi yorumlamaz, tanı sonucu üretmez ve bir kişi hakkında değerlendirme yapmaz. Bu yazılım bir in vitro tanı (IVD) tıbbi cihazı değildir ve bu amaçla herhangi bir uygunluk değerlendirmesinden geçmemiştir.</span><span class="en">AllPrime is a primer design tool developed for use within a laboratory. It does not interpret patient data, does not produce a diagnostic result, and makes no assessment about any individual. This software is not an in vitro diagnostic (IVD) medical device and has not undergone any conformity assessment for that purpose.</span></li>
+      <li><span class="tr">Yazılımın ürettiği primerlerin, tanı amaçlı kullanılmadan önce kullanıcı laboratuvarı tarafından deneysel olarak doğrulanması gerekir; yazılım bu amaç için doğrulanmamıştır. Özgüllük taraması ve yaygın varyant (dbSNP) kaçınması yardımcı kontrollerdir; deneysel doğrulamanın yerini tutmazlar.</span><span class="en">Primers produced by this software should be experimentally validated by the user's laboratory before any diagnostic use; the software has not been validated for that purpose. The specificity scan and common-variant (dbSNP) avoidance are supporting checks; they do not replace experimental validation.</span></li>
+      <li><span class="tr">Bu yazılım geliştirildiği laboratuvarın iş akışına göre hazırlanmıştır ve başka laboratuvarlarda doğrulanmamıştır. Yazılımı kullanan her laboratuvar, sonuçları kendi koşullarında deneysel olarak doğrulamaktan sorumludur.</span><span class="en">This software was built around the workflow of the laboratory where it was developed and has not been validated in other laboratories. Each laboratory using it is itself responsible for experimentally validating the results under its own conditions.</span></li>
+      <li><span class="tr">Sonuçlar, kullanılan referans genom ve annotasyon sürümlerine bağlıdır. GRCh37 (hg19) ve GRCh38 (hg38) koordinatları birbirinden farklıdır.</span><span class="en">Results depend on the reference genome and annotation versions in use. GRCh37 (hg19) and GRCh38 (hg38) coordinates differ.</span></li>
+      <li><span class="tr">Yazılım “olduğu gibi” sunulmaktadır. Açık ya da örtülü hiçbir garanti verilmez.</span><span class="en">The software is provided “as is”, without warranty of any kind, express or implied.</span></li>
+    </ol>
+  </section>
+
+  <!-- ===== Citation & contact (KURULUM.txt "ILETISIM VE ATIF", CITATION.cff) ===== -->
+  <section aria-labelledby="h-cite">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Atıf ve iletişim</span><span class="en">Citation and contact</span></p>
+      <h2 id="h-cite"><span class="tr">Atıf yapmak, soru sormak, hata bildirmek</span><span class="en">Citing, asking and reporting a bug</span></h2>
+    </div>
+    <div class="cols">
+      <div class="panel">
+        <h3><span class="tr">Atıf</span><span class="en">Citation</span></h3>
+        <p class="muted"><span class="tr">Çalışmanızda AllPrime'ı kullandıysanız lütfen atıf yapın. Önerilen biçim:</span><span class="en">If you use AllPrime in your work, please cite it. Suggested form:</span></p>
+        <p class="cite">Kılınç E. AllPrime: a desktop program for variant-specific PCR primer design (<span class="tr">kullandığınız sürüm</span><span class="en">the version you used</span>). Zenodo; 2026. <a href="https://doi.org/10.5281/zenodo.24444832" target="_blank" rel="noopener">https://doi.org/10.5281/zenodo.24444832</a></p>
+        <p class="muted"><span class="tr">Bu DOI bütün sürümleri kapsar ve her zaman en son sürüme gider.</span><span class="en">This DOI covers all versions and always resolves to the latest one.</span></p>
+      </div>
+      <div class="panel">
+        <h3><span class="tr">İletişim</span><span class="en">Contact</span></h3>
+        <ul>
+          <li><span class="tr">Soru, öneri ve hata bildirimi:</span><span class="en">Questions, suggestions and bug reports:</span> <a href="mailto:eren.501kilinc@gmail.com">eren.501kilinc@gmail.com</a></li>
+          <li><span class="tr">Hata bildirirken hasta adı ya da kimliği gibi kişisel veri göndermeyin; programın sürüm numarasını ve hatayı veren girdiyi yazmanız yeterlidir.</span><span class="en">When reporting a bug do not send personal data such as a patient name or identifier; the program's version number and the input that gave the error are enough.</span></li>
+          <li><span class="tr">Kaynak kod ve sürümler:</span><span class="en">Source code and releases:</span> <a href="https://github.com/allprime-app/AllPrime" target="_blank" rel="noopener">github.com/allprime-app/AllPrime</a></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Licence ===== -->
+  <section aria-labelledby="h-licence">
+    <div class="sec-head">
+      <p class="eyebrow"><span class="tr">Lisans</span><span class="en">Licence</span></p>
+      <h2 id="h-licence"><span class="tr">Özgür yazılım, kaynak kodu birlikte</span><span class="en">Free software, source included</span></h2>
+      <p><span class="tr">AllPrime, <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.html" target="_blank" rel="noopener">GNU GPL sürüm 2</a> ya da (isteğinize göre) daha sonraki bir sürümü ile lisanslıdır ve hiçbir garanti olmaksızın sunulur. Paketli motor Apache-2.0 lisanslı bileşenler (requests, OpenSSL) içerdiğinden derlenmiş program, bunlarla uyumlu olan <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL v3</a> koşullarıyla dağıtılır. Kaynak kod <a href="https://github.com/allprime-app/AllPrime" target="_blank" rel="noopener">GitHub'da</a> açıktır ve program klasöründe de birlikte gelir. Hesaplama motoru primer3 / primer3-py'dir (GNU GPL v2 veya sonrası).</span><span class="en">AllPrime is licensed under the <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.html" target="_blank" rel="noopener">GNU GPL version 2</a> or (at your option) any later version and comes with no warranty. Because the bundled engine includes Apache-2.0 components (requests, OpenSSL), the compiled program is distributed under the compatible <a href="https://www.gnu.org/licenses/gpl-3.0.html" target="_blank" rel="noopener">GPL v3</a> terms. The source code is public on <a href="https://github.com/allprime-app/AllPrime" target="_blank" rel="noopener">GitHub</a> and is also included in the program folder. The calculation engine is primer3 / primer3-py (GNU GPL v2 or later).</span></p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><span class="tr">© 2026 Eren Kılınç · GNU GPL v2 veya sonrası</span><span class="en">© 2026 Eren Kılınç · GNU GPL v2 or later</span></p>
+  </div>
+</footer>
+
+</div>
+
+<script>
+(function () {
+  var site = document.getElementById("site");
+  var KEY = "allprime-site-lang";
+  function setLang(l, save) {
+    var en = l === "en";
+    site.classList.toggle("en-on", en);
+    document.documentElement.lang = en ? "en" : "tr";
+    var btns = site.querySelectorAll(".lang button");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].setAttribute("aria-pressed", btns[i].getAttribute("data-lang") === l ? "true" : "false");
+    }
+    var imgs = site.querySelectorAll("img[data-alt-tr]");
+    for (var j = 0; j < imgs.length; j++) {
+      imgs[j].alt = imgs[j].getAttribute(en ? "data-alt-en" : "data-alt-tr");
+    }
+    var regs = site.querySelectorAll("[data-label-tr]");
+    for (var k = 0; k < regs.length; k++) {
+      regs[k].setAttribute("aria-label", regs[k].getAttribute(en ? "data-label-en" : "data-label-tr"));
+    }
+    if (save) { try { localStorage.setItem(KEY, l); } catch (e) {} }
+  }
+  function fromHash() {
+    var h = (location.hash || "").toLowerCase();
+    return h === "#en" ? "en" : h === "#tr" ? "tr" : null;
+  }
+  var start = fromHash();
+  if (!start) { try { start = localStorage.getItem(KEY); } catch (e) { start = null; } }
+  setLang(start === "en" ? "en" : "tr", false);
+  site.querySelector(".lang").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button[data-lang]");
+    if (b) setLang(b.getAttribute("data-lang"), true);
+  });
+  window.addEventListener("hashchange", function () {
+    var l = fromHash();
+    if (l) setLang(l, false);
+  });
+})();
+</script>
+</body>
+</html>
